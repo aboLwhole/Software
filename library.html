@@ -216,7 +216,7 @@ button:hover {
 </div>
 </div>
 
-<div class="book-card" data-id="110" data-title="Web Development" data-brief="HTML, CSS, JS." data-qty=0">
+<div class="book-card" data-id="110" data-title="Web Development" data-brief="HTML, CSS, JS." data-qty="0">
 <img src="https://pictures.abebooks.com/isbn/9780134481265-us.jpg">
 <div class="book-content">
 <h3>Book ID: 110</h3>
@@ -233,6 +233,8 @@ button:hover {
 <div style="background:#fff; max-width:500px; margin:10% auto; padding:20px; border-radius:10px;">
 <h3 id="modal-title"></h3>
 <p id="modal-brief"></p>
+<label for="return-date" id="date-label" style="display:none;">Return Date:</label>
+<input type="date" id="return-date" style="margin:10px 0; display:none;">
 <button onclick="addFromModal('Borrow')">Borrow</button>
 <button onclick="addFromModal('Purchase')">Purchase</button>
 <button onclick="closeModal()">Close</button>
@@ -251,6 +253,17 @@ function openModal(btn){
     currentBook = btn.closest(".book-card");
     document.getElementById("modal-title").innerText = currentBook.dataset.title;
     document.getElementById("modal-brief").innerText = currentBook.dataset.brief;
+    const qty = parseInt(currentBook.dataset.qty);
+    const dateInput = document.getElementById("return-date");
+    const dateLabel = document.getElementById("date-label");
+    if (qty > 0) {
+        dateInput.style.display = "block";
+        dateLabel.style.display = "block";
+        dateInput.value = ""; // Reset value
+    } else {
+        dateInput.style.display = "none";
+        dateLabel.style.display = "none";
+    }
     document.getElementById("modal").style.display = "block";
 }
 
@@ -261,6 +274,22 @@ function closeModal(){
 function addFromModal(action){
     let qty = parseInt(currentBook.dataset.qty);
     if (qty <= 0) return alert("Book not available");
+
+    const returnDateInput = document.getElementById("return-date");
+    let returnDate = null;
+    if (action === "Borrow") {
+        returnDate = returnDateInput.value;
+        if (!returnDate) {
+            alert("Please select a return date.");
+            return;
+        }
+        // Optional: Validate date is in the future
+        const today = new Date().toISOString().split('T')[0];
+        if (returnDate <= today) {
+            alert("Return date must be in the future.");
+            return;
+        }
+    }
 
     qty--;
     currentBook.dataset.qty = qty;
@@ -275,15 +304,30 @@ function addFromModal(action){
     const li = document.createElement("li");
     li.dataset.action = action;
     li.dataset.title = currentBook.dataset.title;
+    li.dataset.bookId = currentBook.dataset.id;
+    if (returnDate) {
+        li.dataset.returnDate = returnDate;
+    }
 
     const text = document.createElement("span");
-    text.textContent = `${currentBook.dataset.title} | ${action}`;
+    text.textContent = `${currentBook.dataset.title} | ${action}${returnDate ? ` | Return: ${returnDate}` : ''}`;
 
     const cancel = document.createElement("span");
     cancel.textContent = "✖";
     cancel.style.cursor = "pointer";
     cancel.style.color = "red";
-    cancel.onclick = () => li.remove();
+    cancel.onclick = () => {
+        // Restore quantity when removing from cart
+        qty++;
+        currentBook.dataset.qty = qty;
+        currentBook.querySelector(".quantity").textContent = "In Library: " + qty;
+        if (qty > 0) {
+            const status = currentBook.querySelector(".status");
+            status.textContent = "Available";
+            status.className = "status available";
+        }
+        li.remove();
+    };
 
     li.appendChild(text);
     li.appendChild(cancel);
@@ -299,37 +343,19 @@ function checkout(){
         return;
     }
 
+    let message = "Checkout Summary:\n";
     for (const item of cart.children) {
         const bookId = item.dataset.bookId;
         const action = item.dataset.action;
-        const book = document.querySelector(`.book-card[data-id="${bookId}"]`);
-
-        let qty = parseInt(book.dataset.qty);
-        if (qty <= 0) {
-            alert("One or more books are no longer available.");
-            return;
+        const returnDate = item.dataset.returnDate;
+        message += `${item.dataset.title} - ${action}`;
+        if (returnDate) {
+            message += ` (Return by: ${returnDate})`;
         }
-
-        if (action === "Borrow") {
-            // calendar picker
-            const date = document.createElement("input");
-            date.type = "date";
-            if (!prompt("Select return date from calendar then press OK")) return;
-        }
-
-        // Deduct quantity
-        qty--;
-        book.dataset.qty = qty;
-        book.querySelector(".quantity").textContent = "In Library: " + qty;
-
-        if (qty === 0) {
-            const status = book.querySelector(".status");
-            status.textContent = "Not Available";
-            status.className = "status not-available";
-        }
+        message += "\n";
     }
 
-    alert("Checkout completed successfully");
+    alert(message + "\nCheckout completed successfully");
     cart.innerHTML = "";
 }
 </script>
