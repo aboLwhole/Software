@@ -216,7 +216,7 @@ button:hover {
 </div>
 </div>
 
-<div class="book-card" data-id="110" data-title="Web Development" data-brief="HTML, CSS, JS." data-qty="0">
+<div class="book-card" data-id="110" data-title="Web Development" data-brief="HTML, CSS, JS." data-qty=0">
 <img src="https://pictures.abebooks.com/isbn/9780134481265-us.jpg">
 <div class="book-content">
 <h3>Book ID: 110</h3>
@@ -275,7 +275,6 @@ function addFromModal(action){
     const li = document.createElement("li");
     li.dataset.action = action;
     li.dataset.title = currentBook.dataset.title;
-    li.dataset.bookId = currentBook.dataset.id;
 
     const text = document.createElement("span");
     text.textContent = `${currentBook.dataset.title} | ${action}`;
@@ -284,21 +283,7 @@ function addFromModal(action){
     cancel.textContent = "✖";
     cancel.style.cursor = "pointer";
     cancel.style.color = "red";
-    cancel.onclick = () => {
-        if (confirm("Are you sure you want to remove this item from the cart?")) {
-            // Restore quantity when removing from cart
-            let qty = parseInt(currentBook.dataset.qty);
-            qty++;
-            currentBook.dataset.qty = qty;
-            currentBook.querySelector(".quantity").textContent = "In Library: " + qty;
-            if (qty > 0) {
-                const status = currentBook.querySelector(".status");
-                status.textContent = "Available";
-                status.className = "status available";
-            }
-            li.remove();
-        }
-    };
+    cancel.onclick = () => li.remove();
 
     li.appendChild(text);
     li.appendChild(cancel);
@@ -326,13 +311,22 @@ function checkout(){
         }
 
         if (action === "Borrow") {
-            // Simple date prompt (improved from original broken date picker)
-            const returnDate = prompt("Enter return date (YYYY-MM-DD):");
-            if (!returnDate) return;
-            // You could add validation here
+            // calendar picker
+            const date = document.createElement("input");
+            date.type = "date";
+            if (!prompt("Select return date from calendar then press OK")) return;
         }
 
-        // Quantity already deducted on add, no need to deduct again
+        // Deduct quantity
+        qty--;
+        book.dataset.qty = qty;
+        book.querySelector(".quantity").textContent = "In Library: " + qty;
+
+        if (qty === 0) {
+            const status = book.querySelector(".status");
+            status.textContent = "Not Available";
+            status.className = "status not-available";
+        }
     }
 
     alert("Checkout completed successfully");
