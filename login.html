@@ -117,6 +117,18 @@
             background: #1e3c72;
         }
 
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
         .footer-text {
             margin-top: 25px;
             font-size: 12px;
@@ -137,7 +149,7 @@
         </div>
 
         <!-- Login Form -->
-        <form id="login-form" class="form-container active" action="library.html" method="post">
+        <form id="login-form" class="form-container active">
             <div class="input-group">
                 <label for="login-username">Username</label>
                 <input type="text" id="login-username" name="username" placeholder="Enter username" required>
@@ -147,6 +159,7 @@
                 <input type="password" id="login-password" name="password" placeholder="Enter password" required>
             </div>
             <button type="submit">Login</button>
+            <div id="login-error" class="error"></div>
         </form>
 
         <!-- Registration Form -->
@@ -168,6 +181,8 @@
                 <input type="password" id="register-confirm-password" name="confirm_password" placeholder="Confirm your password" required>
             </div>
             <button type="submit">Register</button>
+            <div id="register-error" class="error"></div>
+            <div id="register-success" class="success"></div>
         </form>
 
         <p class="footer-text">© 2025 Library Management System</p>
@@ -175,6 +190,12 @@
 </div>
 
 <script>
+    // Demo user data (replace with backend in production)
+    const users = [
+        { username: 'admin', password: 'password', email: 'admin@example.com' },
+        { username: 'user1', password: 'pass123', email: 'user1@example.com' }
+    ];
+
     // Toggle between login and register forms
     const loginToggle = document.getElementById('login-toggle');
     const registerToggle = document.getElementById('register-toggle');
@@ -186,6 +207,7 @@
         registerToggle.classList.remove('active');
         loginForm.classList.add('active');
         registerForm.classList.remove('active');
+        clearMessages();
     });
 
     registerToggle.addEventListener('click', () => {
@@ -193,7 +215,81 @@
         loginToggle.classList.remove('active');
         registerForm.classList.add('active');
         loginForm.classList.remove('active');
+        clearMessages();
     });
+
+    // Login form validation
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const errorDiv = document.getElementById('login-error');
+
+        errorDiv.textContent = '';
+
+        if (!username || !password) {
+            errorDiv.textContent = 'Please fill in both username and password.';
+            return;
+        }
+
+        const user = users.find(u => u.username === username);
+        if (!user) {
+            errorDiv.textContent = 'Account not found. Please register first.';
+            return;
+        }
+
+        if (user.password !== password) {
+            errorDiv.textContent = 'Invalid password.';
+            return;
+        }
+
+        // Success: Redirect to library
+        window.location.href = 'library.html';
+    });
+
+    // Register form validation and flow
+    registerForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default submit for demo; in production, let it go to backend
+        const username = document.getElementById('register-username').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value.trim();
+        const confirmPassword = document.getElementById('register-confirm-password').value.trim();
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+
+        errorDiv.textContent = '';
+        successDiv.textContent = '';
+
+        if (!username || !email || !password || !confirmPassword) {
+            errorDiv.textContent = 'Please fill in all fields.';
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            errorDiv.textContent = 'Passwords do not match.';
+            return;
+        }
+
+        if (users.some(u => u.username === username)) {
+            errorDiv.textContent = 'Username already exists.';
+            return;
+        }
+
+        // Simulate registration success (in production, handle via backend)
+        users.push({ username, password, email });
+        successDiv.textContent = 'Registration successful! Please login with your credentials.';
+
+        // Switch to login form after 2 seconds
+        setTimeout(() => {
+            loginToggle.click();
+        }, 2000);
+    });
+
+    function clearMessages() {
+        document.getElementById('login-error').textContent = '';
+        document.getElementById('register-error').textContent = '';
+        document.getElementById('register-success').textContent = '';
+    }
 </script>
 </body>
 </html>
