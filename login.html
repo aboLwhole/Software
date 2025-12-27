@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Sphinx Library Login</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -43,6 +42,40 @@
             margin-bottom: 30px;
         }
 
+        .toggle-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: #f0f0f0;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px 0 0 6px;
+        }
+
+        .toggle-buttons button.active {
+            background: #2a5298;
+            color: white;
+        }
+
+        .toggle-buttons button:last-child {
+            border-radius: 0 6px 6px 0;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
         .input-group {
             text-align: left;
             margin-bottom: 20px;
@@ -68,7 +101,7 @@
             border-color: #2a5298;
         }
 
-        button {
+        button[type="submit"] {
             width: 100%;
             padding: 12px;
             border: none;
@@ -80,7 +113,7 @@
             margin-top: 10px;
         }
 
-        button:hover {
+        button[type="submit"]:hover {
             background: #1e3c72;
         }
 
@@ -91,31 +124,76 @@
         }
     </style>
 </head>
-
 <body>
-
 <div class="container">
     <div class="login-card">
-        <h1> Sphinx Library</h1>
-        <p class="subtitle">Access your account</p>
+        <h1>Sphinx Library</h1>
+        <p class="subtitle">Access or create your account</p>
 
-        <form action="library.html">
+        <!-- Toggle Buttons -->
+        <div class="toggle-buttons">
+            <button id="login-toggle" class="active">Login</button>
+            <button id="register-toggle">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="form-container active" action="library.html" method="post">
             <div class="input-group">
-                <label>Username</label>
-                <input type="text" placeholder="Enter username" required>
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" name="username" placeholder="Enter username" required>
             </div>
-
             <div class="input-group">
-                <label>Password</label>
-                <input type="password" placeholder="Enter password" required>
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" name="password" placeholder="Enter password" required>
             </div>
-
             <button type="submit">Login</button>
+        </form>
+
+        <!-- Registration Form -->
+        <form id="register-form" class="form-container" action="register.php" method="post">
+            <div class="input-group">
+                <label for="register-username">Username</label>
+                <input type="text" id="register-username" name="username" placeholder="Choose a username" required>
+            </div>
+            <div class="input-group">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="input-group">
+                <label for="register-password">Password</label>
+                <input type="password" id="register-password" name="password" placeholder="Create a password" required minlength="8">
+            </div>
+            <div class="input-group">
+                <label for="register-confirm-password">Confirm Password</label>
+                <input type="password" id="register-confirm-password" name="confirm_password" placeholder="Confirm your password" required>
+            </div>
+            <button type="submit">Register</button>
         </form>
 
         <p class="footer-text">© 2025 Library Management System</p>
     </div>
 </div>
 
+<script>
+    // Toggle between login and register forms
+    const loginToggle = document.getElementById('login-toggle');
+    const registerToggle = document.getElementById('register-toggle');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+
+    loginToggle.addEventListener('click', () => {
+        loginToggle.classList.add('active');
+        registerToggle.classList.remove('active');
+        loginForm.classList.add('active');
+        registerForm.classList.remove('active');
+    });
+
+    registerToggle.addEventListener('click', () => {
+        registerToggle.classList.add('active');
+        loginToggle.classList.remove('active');
+        registerForm.classList.add('active');
+        loginForm.classList.remove('active');
+    });
+</script>
 </body>
 </html>
