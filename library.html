@@ -244,10 +244,41 @@ button:hover {
 <script>
 let currentBook = null;
 
-document.querySelectorAll(".book-card").forEach(book => {
-    const qty = parseInt(book.dataset.qty);
-    book.querySelector(".quantity").textContent = "In Library: " + qty;
-});
+// Load book quantities from localStorage or use defaults
+function loadBookData() {
+    const savedData = localStorage.getItem('bookData');
+    const bookData = savedData ? JSON.parse(savedData) : {};
+
+    document.querySelectorAll(".book-card").forEach(book => {
+        const id = book.dataset.id;
+        const defaultQty = parseInt(book.dataset.qty);
+        const qty = bookData[id] !== undefined ? bookData[id] : defaultQty;
+
+        book.dataset.qty = qty;
+        book.querySelector(".quantity").textContent = "In Library: " + qty;
+
+        const status = book.querySelector(".status");
+        if (qty > 0) {
+            status.textContent = "Available";
+            status.className = "status available";
+        } else {
+            status.textContent = "Not Available";
+            status.className = "status not-available";
+        }
+    });
+}
+
+// Save book quantities to localStorage
+function saveBookData() {
+    const bookData = {};
+    document.querySelectorAll(".book-card").forEach(book => {
+        bookData[book.dataset.id] = parseInt(book.dataset.qty);
+    });
+    localStorage.setItem('bookData', JSON.stringify(bookData));
+}
+
+// Initialize on page load
+loadBookData();
 
 function openModal(btn){
     currentBook = btn.closest(".book-card");
@@ -304,10 +335,7 @@ function addFromModal(action){
     const li = document.createElement("li");
     li.dataset.action = action;
     li.dataset.title = currentBook.dataset.title;
-    li.dataset.bookId = currentBook.dataset.id;
-    if (returnDate) {
-        li.dataset.returnDate = returnDate;
-    }
+    li.dataset.bookId = currentBook.dataset.id; // Add bookId for checkout
 
     const text = document.createElement("span");
     text.textContent = `${currentBook.dataset.title} | ${action}${returnDate ? ` | Return: ${returnDate}` : ''}`;
@@ -333,6 +361,7 @@ function addFromModal(action){
     li.appendChild(cancel);
     document.getElementById("cart-items").appendChild(li);
 
+    saveBookData(); // Save after change
     closeModal();
 }
 
@@ -357,6 +386,7 @@ function checkout(){
 
     alert(message + "\nCheckout completed successfully");
     cart.innerHTML = "";
+    saveBookData(); // Save after checkout
 }
 </script>
 
